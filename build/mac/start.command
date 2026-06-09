@@ -1,100 +1,40 @@
 #!/bin/bash
-# ハコ割り生成ツール 起動スクリプト (macOS)
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# ハコ割り生成ツール 起動スクリプト（macOS・Docker 不要版）
+RESOURCES="$(cd "$(dirname "$0")" && pwd)"
+PYTHON_EXE="$RESOURCES/python/bin/python3"
+FFMPEG_BIN="$RESOURCES/tools/ffmpeg/bin"
+WHISPER_CACHE="$RESOURCES/models/whisper"
 OUTPUT_DIR="$HOME/Desktop/ハコ割り生成ツール_output"
 
-echo "============================================"
-echo "  ハコ割り生成ツール"
-echo "============================================"
-echo ""
+# すでに起動中ならブラウザを開いて終了
+if curl -s --max-time 1 "http://127.0.0.1:8503/_stcore/health" >/dev/null 2>&1; then
+    open "http://127.0.0.1:8503"
+    exit 0
+fi
 
 # 出力フォルダ作成
 mkdir -p "$OUTPUT_DIR"
 
-# Docker インストール確認
-if ! command -v docker &>/dev/null; then
-    echo "[エラー] Docker Desktop がインストールされていません。"
-    echo ""
-    echo "下記の URL からインストールしてください："
-    echo "https://www.docker.com/products/docker-desktop/"
-    echo ""
-    read -rp "Enter キーを押して終了..."
-    exit 1
-fi
+# 環境変数を設定してバックグラウンドで Streamlit を起動
+export PATH="$FFMPEG_BIN:$PATH"
+export DYLD_LIBRARY_PATH="$FFMPEG_BIN:${DYLD_LIBRARY_PATH:-}"
+export HAKO_OUTPUT_DIR="$OUTPUT_DIR"
+export WHISPER_CACHE_DIR="$WHISPER_CACHE"
 
-# Docker 起動確認
-if ! docker info &>/dev/null 2>&1; then
-    echo "Docker Desktop を起動しています..."
-    open -a Docker
+"$PYTHON_EXE" -m streamlit run "$RESOURCES/scripts/app.py" \
+    --server.headless true \
+    --server.port 8503 \
+    --server.address 127.0.0.1 \
+    >/dev/null 2>&1 &
 
-    echo "Docker の起動を待っています（最大 90 秒）..."
-    COUNT=0
-    while ! docker info &>/dev/null 2>&1; do
-        sleep 5
-        COUNT=$((COUNT + 1))
-        if [ "$COUNT" -ge 18 ]; then
-            echo ""
-            echo "[エラー] Docker の起動がタイムアウトしました。"
-            echo "Docker Desktop を手動で起動してから再試行してください。"
-            echo ""
-            read -rp "Enter キーを押して終了..."
-            exit 1
-        fi
-    done
-    echo "Docker が起動しました。"
-    echo ""
-fi
-
-# .env ファイル生成
-echo "OUTPUT_DIR=$OUTPUT_DIR" > "$SCRIPT_DIR/.env"
-
-# Docker イメージ確認・ロード
-if ! docker image inspect hako-srt-app &>/dev/null 2>&1; then
-    IMAGE_TAR="$SCRIPT_DIR/hako-srt-app.tar.gz"
-    if [ -f "$IMAGE_TAR" ]; then
-        echo "Docker イメージを読み込んでいます。"
-        echo "このターミナルを閉じないでください。"
-        echo ""
-        docker load -i "$IMAGE_TAR"
-        if [ $? -ne 0 ]; then
-            echo ""
-            echo "[エラー] イメージの読み込みに失敗しました。"
-            echo ""
-            read -rp "Enter キーを押して終了..."
-            exit 1
-        fi
-        echo "イメージの読み込みが完了しました。"
-        rm -f "$IMAGE_TAR" 2>/dev/null || true
-        echo ""
-    else
-        echo "[エラー] hako-srt-app.tar.gz が見つかりません。"
-        echo "再インストールしてください。"
-        echo ""
-        read -rp "Enter キーを押して終了..."
-        exit 1
+# 起動を待つ（最大 3 分）
+for i in $(seq 1 60); do
+    sleep 3
+    if curl -s --max-time 1 "http://127.0.0.1:8503/_stcore/health" >/dev/null 2>&1; then
+        open "http://127.0.0.1:8503"
+        exit 0
     fi
-fi
+done
 
-# コンテナ起動
-echo "アプリを起動しています..."
-docker compose -f "$SCRIPT_DIR/docker-compose.yml" -p hako-srt-tool up -d
-if [ $? -ne 0 ]; then
-    echo ""
-    echo "[エラー] コンテナの起動に失敗しました。"
-    echo ""
-    read -rp "Enter キーを押して終了..."
-    exit 1
-fi
-
-sleep 3
-open http://localhost:8503
-
-echo ""
-echo "============================================"
-echo "  起動完了！"
-echo "  ブラウザで http://localhost:8503 が開きます"
-echo "  出力先: $OUTPUT_DIR"
-echo "============================================"
-echo ""
-echo "このターミナルを閉じてもアプリは動作し続けます。"
-echo "停止するには stop.command を実行してください。"
+osascript -e 'display alert "ハコ割り生成ツール" message "起動がタイムアウトしました。再度試してください。" as critical buttons {"OK"}' 2>/dev/null
+exit 1

@@ -295,40 +295,6 @@ td a:hover { text-decoration: underline; }
 
   <div class="content">
 
-    <!-- 事前準備 -->
-    <div class="section">
-      <div class="section-title">
-        <div class="section-icon">0</div>
-        事前準備　―　Docker Desktop（無料・必須）
-      </div>
-      <table>
-        <tr>
-          <th style="width:140px">OS</th>
-          <th>ダウンロード先</th>
-          <th style="width:160px">選ぶもの</th>
-        </tr>
-        <tr>
-          <td>Windows</td>
-          <td><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a></td>
-          <td>Download for Windows</td>
-        </tr>
-        <tr>
-          <td>Mac (Apple Silicon)</td>
-          <td><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a></td>
-          <td>Download for Mac (Apple Silicon)</td>
-        </tr>
-        <tr>
-          <td>Mac (Intel)</td>
-          <td><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a></td>
-          <td>Download for Mac (Intel)</td>
-        </tr>
-      </table>
-      <p style="font-size:13px;color:#64748b;margin-top:10px;">
-        インストール後 Docker Desktop を起動し、タスクバー（Windows）またはメニューバー（Mac）に
-        クジラのアイコン 🐳 が表示されるのを確認してください。
-      </p>
-    </div>
-
     <!-- インストール -->
     <div class="section">
       <div class="section-title">
@@ -337,21 +303,22 @@ td a:hover { text-decoration: underline; }
       </div>
       <div class="os-grid">
         <div class="os-card win">
-          <div class="os-card-header">🪟 Windows</div>
+          <div class="os-card-header">🪟 Windows（Docker 不要）</div>
           <div class="os-card-body">
             <ol class="step-list">
-              <li>Docker Desktop を起動しておく</li>
               <li><strong>ハコ割り生成ツール_setup.exe</strong> をダブルクリック</li>
               <li>「次へ」を数回クリックしてインストール完了</li>
               <li>デスクトップの <strong>「ハコ割り生成ツール 起動」</strong> をダブルクリック</li>
+              <li>自動でブラウザが開いたら準備完了</li>
             </ol>
+            <p style="font-size:11.5px;color:#15803d;margin-top:8px;">Python・ffmpeg・Whisper AIモデルをすべて同梱。追加インストール一切不要。</p>
           </div>
         </div>
         <div class="os-card mac">
-          <div class="os-card-header">🍎 Mac</div>
+          <div class="os-card-header">🍎 Mac（事前準備が必要）</div>
           <div class="os-card-body">
             <ol class="step-list">
-              <li>Docker Desktop を起動しておく</li>
+              <li><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com</a> から <strong>Docker Desktop</strong> をインストール・起動する</li>
               <li><strong>ハコ割り生成ツール_setup.dmg</strong> を開く</li>
               <li>アプリを <strong>Applications</strong> フォルダへドラッグ</li>
               <li>Finder の Applications から <strong>右クリック → 「開く」</strong><br>
@@ -371,9 +338,9 @@ td a:hover { text-decoration: underline; }
       </div>
       <div class="notice">
         <div class="notice-row">
-          <span class="tag">初回のみ</span>
-          <span>Whisper AI モデル（約 800 MB）のダウンロードが発生します。<br>
-          インターネット回線の速度により <strong>5〜15 分</strong> かかります。</span>
+          <span class="tag">Windows</span>
+          <span>Whisper AI モデルはインストーラーに<strong>同梱済み</strong>です。<br>
+          追加のダウンロードなく、インストール後すぐに使い始めることができます。</span>
         </div>
         <div class="notice-row" style="margin-top:10px;">
           <span class="tag">2回目以降</span>
@@ -469,7 +436,7 @@ td a:hover { text-decoration: underline; }
         </tr>
         <tr>
           <td>ブラウザが開かない</td>
-          <td>ブラウザのアドレスバーに <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:12px;">http://localhost:8503</code> を直接入力してください</td>
+          <td>ブラウザのアドレスバーに <code style="background:#f1f5f9;padding:1px 6px;border-radius:4px;font-size:12px;">http://127.0.0.1:8503</code> を直接入力してください</td>
         </tr>
         <tr>
           <td>Docker エラーが出る</td>
@@ -496,7 +463,7 @@ td a:hover { text-decoration: underline; }
   </div><!-- /content -->
 
   <div class="footer">
-    ハコ割り生成ツール v1.0.0　|　URL: <a href="http://localhost:8503">http://localhost:8503</a>
+    ハコ割り生成ツール v1.0.0　|　URL: <a href="http://127.0.0.1:8503">http://127.0.0.1:8503</a>
   </div>
 
 </div><!-- /page -->

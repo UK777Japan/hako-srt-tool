@@ -50,7 +50,7 @@ if errorlevel 1 (
     echo.
 )
 
-REM --- .env ファイル生成（パス区切りをスラッシュに変換）---
+REM --- .env ファイル作成（パスをスラッシュに変換）---
 set "OUTPUT_FWDSLASH=%OUTPUT_DIR:\=/%"
 (echo OUTPUT_DIR=%OUTPUT_FWDSLASH%) > "%APP_DIR%.env"
 
@@ -94,12 +94,12 @@ if errorlevel 1 (
 
 REM --- ブラウザを開く ---
 timeout /t 3 /nobreak >nul
-start http://localhost:8503
+start http://127.0.0.1:8503
 
 echo.
 echo ============================================
 echo   起動完了！
-echo   ブラウザで http://localhost:8503 が開きます
+echo   ブラウザで http://127.0.0.1:8503 が開きます
 echo   出力先: %OUTPUT_DIR%
 echo ============================================
 echo.

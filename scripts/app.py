@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import os
 import shutil
 import tempfile
 import time
@@ -9,7 +10,8 @@ from pathlib import Path
 
 import streamlit as st
 
-OUTPUT_DIR  = Path("/app/output")
+OUTPUT_DIR  = Path(os.environ.get("HAKO_OUTPUT_DIR",
+                   str(Path.home() / "Desktop" / "ハコ割り生成ツール_output")))
 LOG_FILE    = OUTPUT_DIR / "run_log.txt"
 CONFIG_FILE = OUTPUT_DIR / ".hako_config.json"
 
@@ -349,7 +351,7 @@ if run_btn:
             log(f"デバイス: {device}")
 
             import sys
-            sys.path.insert(0, "/app/scripts")
+            sys.path.insert(0, str(Path(__file__).parent))
             from sync_srt import generate_srt
 
             start = time.time()

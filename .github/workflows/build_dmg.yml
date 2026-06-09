@@ -1,59 +1,38 @@
-name: Build macOS DMG
+name: Build Mac DMG
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/**'
+      - 'build/mac/**'
+      - '.streamlit/**'
 
 jobs:
-  # Job 1: Build Docker image on Linux and export
-  build-image:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t hako-srt-app .
-
-      - name: Export Docker image
-        run: docker save hako-srt-app | gzip -1 > hako-srt-app.tar.gz
-
-      - name: Check image size
-        run: ls -lh hako-srt-app.tar.gz
-
-      - name: Upload image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: hako-srt-app.tar.gz
-          retention-days: 3
-
-  # Job 2: Build DMG on macOS with bundled Docker image
   build-dmg:
-    runs-on: macos-latest
-    needs: build-image
+    name: Build DMG (Apple Silicon)
+    runs-on: macos-14
+    timeout-minutes: 180
+
     steps:
-      - uses: actions/checkout@v4
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
 
-      - name: Download Docker image artifact
-        uses: actions/download-artifact@v4
+      - name: キャッシュ（Python standalone / ffmpeg）
+        uses: actions/cache@v4
         with:
-          name: docker-image
-          path: build/mac/
+          path: build/mac/cache
+          key: mac-build-cache-${{ runner.arch }}-v1
+          restore-keys: mac-build-cache-${{ runner.arch }}-
 
-      - name: Check downloaded image
-        run: ls -lh build/mac/hako-srt-app.tar.gz
-
-      - name: Install create-dmg
-        run: brew install create-dmg
-
-      - name: Build DMG
+      - name: DMG をビルド
         run: bash build/mac/build_dmg.sh
 
-      - name: Check DMG size
-        run: ls -lh dist/mac/
-
-      - name: Upload DMG artifact
+      - name: DMG をアップロード
         uses: actions/upload-artifact@v4
         with:
-          name: mac-dmg
-          path: "dist/mac/ハコ割り生成ツール_setup.dmg"
-          retention-days: 30
+          name: ハコ割り生成ツール_setup_dmg_arm64
+          path: dist/mac/ハコ割り生成ツール_setup.dmg
+          retention-days: 14
+          if-no-files-found: error

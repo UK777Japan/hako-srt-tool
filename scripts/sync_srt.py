@@ -3,6 +3,7 @@
 
 import csv
 import io
+import os
 import re
 import json
 import subprocess
@@ -73,8 +74,9 @@ def run_whisper_transcribe(
         return json.loads(cache_path.read_text(encoding="utf-8"))
 
     import stable_whisper
-    log(f"  モデル {model_name} をロード中...（初回は数分かかる場合があります）")
-    model = stable_whisper.load_model(model_name, device=device)
+    log(f"  モデル {model_name} をロード中...")
+    _whisper_cache = os.environ.get("WHISPER_CACHE_DIR") or None
+    model = stable_whisper.load_model(model_name, device=device, download_root=_whisper_cache)
 
     lang_arg = None if language == "auto" else language
     log("  Transcribe（音声認識）実行中...")

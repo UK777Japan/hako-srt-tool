@@ -614,8 +614,8 @@ a:hover { text-decoration: underline; }
               <tr><td>RAM</td><td>8 GB</td><td>16 GB 以上</td></tr>
               <tr><td>ストレージ空き容量</td><td>5 GB（Docker + モデル）</td><td>10 GB 以上</td></tr>
               <tr><td>CPU</td><td>4 コア</td><td>8 コア以上</td></tr>
-              <tr><td>インターネット</td><td colspan="2">初回起動のみ必要（モデルダウンロード）</td></tr>
-              <tr><td><strong>Docker Desktop</strong></td><td colspan="2"><strong class="mark-rec">必須（無料）</strong></td></tr>
+              <tr><td>インターネット</td><td>Windows 版：<strong>不要</strong>（モデル同梱）</td><td>Mac 版：初回起動のみ必要（モデルダウンロード）</td></tr>
+              <tr><td><strong>Docker Desktop</strong></td><td colspan="2">Windows 版は<strong>不要</strong>（Python・ffmpeg・Whisper を同梱）。Mac 版のみ必要。</td></tr>
             </tbody>
           </table>
         </div>
@@ -637,21 +637,22 @@ a:hover { text-decoration: underline; }
       </div>
       <div class="section-body">
 
-        <h3 id="s3-win">Windows へのインストール</h3>
+        <h3 id="s3-win">Windows へのインストール（Docker 不要）</h3>
 
-        <h4>ステップ 1: Docker Desktop のインストール</h4>
-        <div class="step-cards">
-          <div class="step-card"><div class="step-card-num">1</div><div class="step-card-body"><strong><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a> を開く</strong><span class="sub">「Download for Windows」をクリックしてダウンロード</span></div></div>
-          <div class="step-card"><div class="step-card-num">2</div><div class="step-card-body"><strong>ダウンロードした <span class="inline-code">Docker Desktop Installer.exe</span> をダブルクリック</strong><span class="sub">「Use WSL 2 instead of Hyper-V」の選択肢はそのまま（チェックあり）で OK</span></div></div>
-          <div class="step-card"><div class="step-card-num">3</div><div class="step-card-body"><strong>インストール完了後、Docker Desktop を起動</strong><span class="sub">タスクバー右下にクジラのアイコン 🐳 が表示されれば準備完了</span></div></div>
+        <div class="notice ok">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>事前準備は不要です</strong>
+            Python・ffmpeg・Whisper AI モデル（turbo）はすべてインストーラーに同梱されています。Docker Desktop は必要ありません。
+          </div>
         </div>
 
-        <h4>ステップ 2: ハコ割り生成ツールのインストール</h4>
+        <h4>インストール手順</h4>
         <div class="step-cards">
           <div class="step-card"><div class="step-card-num">1</div><div class="step-card-body"><strong><span class="inline-code">ハコ割り生成ツール_setup.exe</span> をダブルクリック</strong><span class="sub">「このアプリがデバイスに変更を加えることを許可しますか？」→「はい」</span></div></div>
           <div class="step-card"><div class="step-card-num">2</div><div class="step-card-body"><strong>セットアップウィザードが起動します</strong><span class="sub">「次へ」を数回クリックしてインストール完了（インストール先の変更は不要です）</span></div></div>
           <div class="step-card"><div class="step-card-num">3</div><div class="step-card-body"><strong>「デスクトップにショートカットを作成」にチェックが入っていることを確認 →「インストール」</strong></div></div>
-          <div class="step-card"><div class="step-card-num">4</div><div class="step-card-body"><strong>完了画面で「ハコ割り生成ツールを今すぐ起動する」にチェックを入れたまま「完了」</strong></div></div>
+          <div class="step-card"><div class="step-card-num">4</div><div class="step-card-body"><strong>完了画面で「ハコ割り生成ツールを今すぐ起動する」にチェックを入れたまま「完了」</strong><span class="sub">ブラウザが自動で開いたら準備完了です。</span></div></div>
         </div>
 
         <div class="notice ok">
@@ -712,37 +713,29 @@ a:hover { text-decoration: underline; }
       </div>
       <div class="section-body">
         <h3>初回起動の流れ</h3>
-        <p>「ハコ割り生成ツール 起動」をダブルクリックすると、コマンドウィンドウ（ターミナル）が開き、以下のように進みます。</p>
-        <div class="code-block"><span class="c-key">============================================</span>
-  ハコ割り生成ツール
-<span class="c-key">============================================</span>
+        <p>「ハコ割り生成ツール 起動」をダブルクリックするとブラウザが自動で開きます。</p>
+        <p style="margin-top:8px;font-size:13.5px;color:#475569;">初回は Python 環境の初期化（数秒〜1分程度）が発生します。タスクバーに最小化されたウィンドウが表示されます。</p>
+        <div class="code-block"><span class="c-key">ハコ割り生成ツール</span>
+<span class="c-em">（タスクバーに最小化表示）</span>
 
-Docker Desktop を起動しています...
-Docker が起動しました。
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to False.
 
-<span class="c-em">初回起動: Docker イメージをビルドしています。
-Whisper モデルのダウンロード（約 800MB）を含むため、
-ネットワーク速度により 5〜15 分かかる場合があります。</span>
+  You can now view your Streamlit app in your browser.
 
-[ビルドのログが流れます...]
+  Local URL: http://localhost:8503
+  Network URL: http://127.0.0.1:8503
 
-ビルド完了。
-アプリを起動しています...
-
-<span class="c-ok">============================================
-  起動完了！
-  ブラウザで http://localhost:8503 が開きます
-============================================</span></div>
+<span class="c-ok">→ ブラウザが自動で http://127.0.0.1:8503 を開きます</span></div>
         <div class="notice ok">
           <div class="notice-icon"></div>
           <div class="notice-body">
             <strong>2回目以降は数秒で起動します</strong>
-            初回のみモデルのダウンロードが発生します。2回目以降はブラウザが自動で開くまで数秒です。
+            Whisper AI モデルは同梱済みのため、ダウンロード待ちはありません。2回目以降はブラウザが自動で開くまで数秒です。
           </div>
         </div>
         <h3>ブラウザが自動で開かない場合</h3>
         <p>ブラウザのアドレスバーに以下を直接入力してください。</p>
-        <div class="code-block">http://localhost:8503</div>
+        <div class="code-block">http://127.0.0.1:8503</div>
       </div>
     </div>
 
@@ -1217,21 +1210,21 @@ the same period last year.</div>
           <div class="trouble-q">アプリが起動しない / ブラウザが開かない</div>
           <div class="trouble-a">
             <ol style="padding-left:20px;font-size:13.5px;">
-              <li>Docker Desktop が起動しているか確認する（タスクバー / メニューバーの 🐳 アイコン）</li>
-              <li>ブラウザで <span class="inline-code">http://localhost:8503</span> を手動で開いてみる</li>
-              <li>コマンドウィンドウ（ターミナル）のエラーメッセージを確認する</li>
+              <li>タスクバーに「ハコ割り生成ツール」のウィンドウが最小化されていないか確認する（クリックして開くとエラーが確認できます）</li>
+              <li>ブラウザで <span class="inline-code">http://127.0.0.1:8503</span> を手動で開いてみる</li>
+              <li>ウイルス対策ソフトが Python の動作をブロックしていないか確認する</li>
+              <li>再インストールを試みる</li>
             </ol>
           </div>
         </div>
 
         <div class="trouble-item">
-          <div class="trouble-q">初回起動でビルドが失敗する</div>
+          <div class="trouble-q">「Python が見つかりません」と表示される</div>
           <div class="trouble-a">
             <ul style="padding-left:20px;font-size:13.5px;">
-              <li>インターネット接続が正常か確認する</li>
-              <li>Docker Desktop を最新バージョンに更新する</li>
-              <li>ウイルス対策ソフトが Docker の通信をブロックしていないか確認する</li>
-              <li>少し時間を置いてから再試行する（Docker Hub のサーバー負荷の場合）</li>
+              <li>インストールが正常に完了しているか確認する</li>
+              <li>再インストールを試みる（古いバージョンをアンインストール後に再インストール）</li>
+              <li>インストール先フォルダ（<span class="inline-code">%LOCALAPPDATA%\HakoSRTTool\python\</span>）が存在するか確認する</li>
             </ul>
           </div>
         </div>
@@ -1340,7 +1333,7 @@ the same period last year.</div>
     </div>
 
     <div class="footer">
-      ハコ割り生成ツール v1.0.0　|　<a href="http://localhost:8503">http://localhost:8503</a>　|　最終更新: 2026-06-09
+      ハコ割り生成ツール v1.0.0　|　<a href="http://127.0.0.1:8503">http://127.0.0.1:8503</a>　|　最終更新: 2026-06-09
     </div>
 
   </main>
