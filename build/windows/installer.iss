@@ -17,8 +17,8 @@ DefaultGroupName={#AppName}
 AllowNoIcons=no
 OutputDir=..\..\dist\windows
 OutputBaseFilename=ハコ割り生成ツール_setup
-Compression=lzma2/max
-SolidCompression=yes
+Compression=none
+SolidCompression=no
 WizardStyle=modern
 PrivilegesRequired=lowest
 DisableProgramGroupPage=no
@@ -33,7 +33,7 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 [Messages]
 ; 日本語メッセージのカスタマイズ
 WelcomeLabel1=ハコ割り生成ツール セットアップ
-WelcomeLabel2=音声・映像ファイルとハコ割りテキストから%nSRTファイルを自動生成するツールです。%n%nセットアップを続けるには「次へ」をクリックしてください。
+WelcomeLabel2=音声・映像ファイルとハコ割りテキストから%nSRTファイルを自動生成するツールです。%n%nDockerイメージ（約2.4GB）を同梱しているため、%nインターネット接続なしですぐに使い始めることができます。%n%nセットアップを続けるには「次へ」をクリックしてください。
 FinishedLabel=ハコ割り生成ツールのインストールが完了しました。%n%n初回起動時はWhisperモデル（約800MB）のダウンロードが発生するため、%n数分かかります。2回目以降は数秒で起動します。
 
 [Tasks]
@@ -52,6 +52,8 @@ Source: "start.bat";                   DestDir: "{app}";          Flags: ignorev
 Source: "stop.bat";                    DestDir: "{app}";          Flags: ignoreversion
 ; マニュアル
 Source: "..\..\docs\*";                DestDir: "{app}\docs";     Flags: recursesubdirs ignoreversion
+; Docker イメージ（同梱・圧縮スキップ）
+Source: "..\..\dist\hako-srt-app.tar.gz"; DestDir: "{app}";      Flags: ignoreversion
 
 [Icons]
 ; スタートメニュー

@@ -4,12 +4,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: macos-latest
-
+  # Job 1: Build Docker image on Linux and export
+  build-image:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t hako-srt-app .
+
+      - name: Export Docker image
+        run: docker save hako-srt-app | gzip -1 > hako-srt-app.tar.gz
+
+      - name: Check image size
+        run: ls -lh hako-srt-app.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: hako-srt-app.tar.gz
+          retention-days: 3
+
+  # Job 2: Build DMG on macOS with bundled Docker image
+  build-dmg:
+    runs-on: macos-latest
+    needs: build-image
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: build/mac/
+
+      - name: Check downloaded image
+        run: ls -lh build/mac/hako-srt-app.tar.gz
 
       - name: Install create-dmg
         run: brew install create-dmg
@@ -17,9 +48,12 @@ jobs:
       - name: Build DMG
         run: bash build/mac/build_dmg.sh
 
+      - name: Check DMG size
+        run: ls -lh dist/mac/
+
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: mac-dmg
-          path: dist/mac/ハコ割り生成ツール_setup.dmg
+          path: "dist/mac/ハコ割り生成ツール_setup.dmg"
           retention-days: 30

@@ -48,24 +48,31 @@ fi
 # .env ファイル生成
 echo "OUTPUT_DIR=$OUTPUT_DIR" > "$SCRIPT_DIR/.env"
 
-# イメージ確認・初回ビルド
+# Docker イメージ確認・ロード
 if ! docker image inspect hako-srt-app &>/dev/null 2>&1; then
-    echo "初回起動: Docker イメージをビルドしています。"
-    echo "Whisper モデルのダウンロード（約 800MB）を含むため、"
-    echo "ネットワーク速度により 5〜15 分かかる場合があります。"
-    echo ""
-    docker compose -f "$SCRIPT_DIR/docker-compose.yml" -p hako-srt-tool build
-    if [ $? -ne 0 ]; then
+    IMAGE_TAR="$SCRIPT_DIR/hako-srt-app.tar.gz"
+    if [ -f "$IMAGE_TAR" ]; then
+        echo "Docker イメージを読み込んでいます。"
+        echo "このターミナルを閉じないでください。"
         echo ""
-        echo "[エラー] ビルドに失敗しました。"
-        echo "インターネット接続と Docker の状態を確認してください。"
+        docker load -i "$IMAGE_TAR"
+        if [ $? -ne 0 ]; then
+            echo ""
+            echo "[エラー] イメージの読み込みに失敗しました。"
+            echo ""
+            read -rp "Enter キーを押して終了..."
+            exit 1
+        fi
+        echo "イメージの読み込みが完了しました。"
+        rm -f "$IMAGE_TAR" 2>/dev/null || true
+        echo ""
+    else
+        echo "[エラー] hako-srt-app.tar.gz が見つかりません。"
+        echo "再インストールしてください。"
         echo ""
         read -rp "Enter キーを押して終了..."
         exit 1
     fi
-    echo ""
-    echo "ビルド完了。"
-    echo ""
 fi
 
 # コンテナ起動

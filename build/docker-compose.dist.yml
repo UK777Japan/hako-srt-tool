@@ -1,6 +1,5 @@
 services:
   hako-srt:
-    build: .
     image: hako-srt-app
     container_name: hako-srt
     ports:

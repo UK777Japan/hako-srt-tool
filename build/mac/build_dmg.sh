@@ -80,6 +80,15 @@ cp "$BUILD_MAC_DIR/stop.command"      "$APP_BUNDLE/Contents/Resources/"
 chmod +x "$APP_BUNDLE/Contents/Resources/start.command"
 chmod +x "$APP_BUNDLE/Contents/Resources/stop.command"
 
+# Docker イメージ同梱
+if [ -f "$BUILD_MAC_DIR/hako-srt-app.tar.gz" ]; then
+    echo "   Docker イメージを同梱中（約2.4GB）..."
+    cp "$BUILD_MAC_DIR/hako-srt-app.tar.gz" "$APP_BUNDLE/Contents/Resources/"
+    echo "   Docker イメージを同梱しました"
+else
+    echo "   [警告] hako-srt-app.tar.gz が見つかりません。start.command が動作しません。"
+fi
+
 echo "   .app バンドル完成: $APP_BUNDLE"
 
 # ---- 停止用 .app （AppleScript）----
