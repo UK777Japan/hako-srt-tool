@@ -1,0 +1,11 @@
+services:
+  hako-srt:
+    build: .
+    image: hako-srt-app
+    container_name: hako-srt
+    ports:
+      - "8503:8501"
+    volumes:
+      - C:/Users/uk/Desktop/ハコ割り生成ツール_output:/app/output
+      - ./scripts:/app/scripts
+    restart: unless-stopped

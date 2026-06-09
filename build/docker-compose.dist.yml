@@ -1,0 +1,10 @@
+services:
+  hako-srt:
+    build: .
+    image: hako-srt-app
+    container_name: hako-srt
+    ports:
+      - "8503:8501"
+    volumes:
+      - "${OUTPUT_DIR}:/app/output"
+    restart: unless-stopped

@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+dist/
+.hako_config.json
+run_log.txt
+_tmp/
+参考資料/
+OpenAI APIキー.txt
