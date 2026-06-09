@@ -57,8 +57,8 @@ Source: "..\..\docs\*";                DestDir: "{app}\docs";     Flags: recurse
 ; スタートメニュー
 Name: "{group}\ハコ割り生成ツール 起動"; Filename: "{app}\start.bat"; WorkingDir: "{app}"
 Name: "{group}\ハコ割り生成ツール 停止"; Filename: "{app}\stop.bat";  WorkingDir: "{app}"
-Name: "{group}\マニュアル";              Filename: "{app}\docs\マニュアル.md"
-Name: "{group}\クイックセットアップ";     Filename: "{app}\docs\クイックセットアップ.md"
+Name: "{group}\マニュアル";              Filename: "{app}\docs\マニュアル.html"
+Name: "{group}\クイックセットアップ";     Filename: "{app}\docs\クイックセットアップ.html"
 Name: "{group}\アンインストール";         Filename: "{uninstallexe}"
 ; デスクトップ
 Name: "{userdesktop}\ハコ割り生成ツール 起動"; Filename: "{app}\start.bat"; WorkingDir: "{app}"; Tasks: desktopicon

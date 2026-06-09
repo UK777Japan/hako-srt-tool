@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ハコ割り生成ツール　マニュアル</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:    #1e40af;
+  --blue-lt: #3b82f6;
+  --blue-bg: #eff6ff;
+  --blue-bd: #bfdbfe;
+  --gray:    #64748b;
+  --gray-bg: #f8fafc;
+  --gray-bd: #e2e8f0;
+  --text:    #1e293b;
+  --code-bg: #0f172a;
+  --green:   #15803d;
+  --amber:   #92400e;
+  --amber-bg:#fffbeb;
+  --amber-bd:#fcd34d;
+  --red:     #dc2626;
+  --sidebar-w: 260px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Yu Gothic', sans-serif;
+  background: #f1f5f9;
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+/* ============ TOP NAV ============ */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--blue);
+  color: #fff;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 54px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+.topnav-title { font-size: 15px; font-weight: 700; letter-spacing: .03em; }
+.topnav-sub   { font-size: 12px; opacity: .7; }
+.topnav-spacer{ flex: 1; }
+.topnav a { color: rgba(255,255,255,.85); font-size: 13px; text-decoration: none; }
+.topnav a:hover { color: #fff; text-decoration: underline; }
+
+/* ============ LAYOUT ============ */
+.layout {
+  display: flex;
+  max-width: 1160px;
+  margin: 28px auto;
+  gap: 24px;
+  padding: 0 16px;
+  align-items: flex-start;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  position: sticky;
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid var(--gray-bd);
+  padding: 16px 0 20px;
+}
+.sidebar-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--gray);
+  padding: 0 18px 8px;
+  border-bottom: 1px solid var(--gray-bd);
+  margin-bottom: 8px;
+}
+.sidebar a {
+  display: block;
+  padding: 5px 18px;
+  font-size: 13px;
+  color: #374151;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: background .15s, border-color .15s;
+}
+.sidebar a:hover { background: var(--blue-bg); color: var(--blue); border-left-color: var(--blue-lt); }
+.sidebar a.sub { padding-left: 30px; font-size: 12.5px; color: var(--gray); }
+.sidebar a.sub:hover { color: var(--blue); }
+
+/* ============ MAIN ============ */
+.main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============ HERO ============ */
+.hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #3b82f6 100%);
+  border-radius: 12px;
+  padding: 40px 44px;
+  color: #fff;
+  margin-bottom: 28px;
+}
+.hero h1 { font-size: 28px; font-weight: 800; letter-spacing: .02em; }
+.hero p  { margin-top: 8px; font-size: 15px; opacity: .85; max-width: 540px; line-height: 1.6; }
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.chip {
+  background: rgba(255,255,255,.18);
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 20px;
+  padding: 3px 14px;
+  font-size: 12.5px;
+}
+
+/* ============ SECTION ============ */
+.section {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--gray-bd);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid var(--gray-bd);
+}
+.section-num {
+  width: 32px; height: 32px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.section-body { padding: 24px 28px; }
+.section-body h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue);
+  margin: 24px 0 10px;
+  padding-left: 10px;
+  border-left: 3px solid var(--blue-lt);
+}
+.section-body h3:first-child { margin-top: 0; }
+.section-body h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin: 18px 0 8px;
+}
+.section-body p  { margin-bottom: 10px; font-size: 14.5px; }
+.section-body ul, .section-body ol {
+  padding-left: 22px;
+  margin-bottom: 12px;
+  font-size: 14.5px;
+}
+.section-body li { margin-bottom: 4px; }
+
+/* ============ TABLES ============ */
+.tbl-wrap { overflow-x: auto; margin: 8px 0 16px; border-radius: 8px; border: 1px solid var(--gray-bd); }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  background: var(--gray-bg);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--gray);
+  border-bottom: 1px solid var(--gray-bd);
+}
+tbody td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: top;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafafa; }
+.mark-rec { color: var(--green); font-weight: 700; }
+.mark-note { font-size: 12px; color: var(--gray); }
+a { color: var(--blue-lt); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ============ CODE BLOCKS ============ */
+.code-block {
+  background: var(--code-bg);
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin: 8px 0 14px;
+  white-space: pre;
+}
+.code-block .c-comment { color: #94a3b8; }
+.code-block .c-key     { color: #93c5fd; }
+.code-block .c-val     { color: #86efac; }
+.code-block .c-em      { color: #fbbf24; }
+.code-block .c-ok      { color: #4ade80; }
+.code-block .c-err     { color: #f87171; }
+.code-block .c-dir     { color: #c4b5fd; }
+
+.inline-code {
+  background: #f1f5f9;
+  color: var(--blue);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 13px;
+  border: 1px solid var(--blue-bd);
+}
+
+/* ============ NOTICE BOXES ============ */
+.notice {
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin: 10px 0 16px;
+  font-size: 13.5px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.notice-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.notice-body { flex: 1; }
+.notice-body strong { display: block; margin-bottom: 3px; font-size: 14px; }
+.notice.info  { background: var(--blue-bg);  border: 1px solid var(--blue-bd);  }
+.notice.info .notice-icon::before { content: "ℹ️"; }
+.notice.warn  { background: var(--amber-bg); border: 1px solid var(--amber-bd); }
+.notice.warn .notice-icon::before { content: "⚠️"; }
+.notice.ok    { background: #f0fdf4;          border: 1px solid #bbf7d0;         }
+.notice.ok .notice-icon::before { content: "✅"; }
+
+/* ============ STEP CARDS ============ */
+.step-cards { display: flex; flex-direction: column; gap: 10px; margin: 8px 0 16px; }
+.step-card {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid var(--gray-bd);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.step-card-num {
+  width: 28px; height: 28px;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-card-body { flex: 1; font-size: 14px; }
+.step-card-body strong { display: block; margin-bottom: 4px; color: var(--text); }
+.step-card-body .sub { font-size: 13px; color: var(--gray); }
+
+/* ============ OS TABS ============ */
+.os-tabs { display: flex; gap: 0; margin-bottom: 16px; }
+.os-tab {
+  flex: 1;
+  border: 1.5px solid var(--gray-bd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.os-tab + .os-tab { margin-left: 12px; }
+.os-tab-header {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--gray-bd);
+}
+.os-tab.win .os-tab-header { background: #eff6ff; color: var(--blue); }
+.os-tab.mac .os-tab-header { background: #f0fdf4; color: var(--green); }
+.os-tab-body { padding: 14px 16px; }
+.os-step-list { list-style: none; counter-reset: ostep; }
+.os-step-list li {
+  counter-increment: ostep;
+  display: flex;
+  gap: 10px;
+  font-size: 13.5px;
+  padding: 5px 0;
+  align-items: flex-start;
+}
+.os-step-list li::before {
+  content: counter(ostep);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.os-tab.win .os-step-list li::before { background: var(--blue); color: #fff; }
+.os-tab.mac .os-step-list li::before { background: var(--green); color: #fff; }
+.sub-note { font-size: 12px; color: var(--gray); display: block; margin-top: 2px; }
+@media (max-width: 600px) { .os-tabs { flex-direction: column; } .os-tab + .os-tab { margin-left: 0; margin-top: 10px; } }
+
+/* ============ EXAMPLE CASE ============ */
+.example {
+  border: 1.5px solid var(--gray-bd);
+  border-radius: 10px;
+  margin: 8px 0 20px;
+  overflow: hidden;
+}
+.example-header {
+  background: linear-gradient(90deg, #1e3a8a, #2563eb);
+  color: #fff;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.example-num {
+  background: rgba(255,255,255,.25);
+  border-radius: 6px;
+  padding: 1px 9px;
+  font-size: 12px;
+}
+.example-body { padding: 18px; }
+.ex-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: flex-start; font-size: 13.5px; }
+.ex-label {
+  background: var(--gray-bg);
+  border: 1px solid var(--gray-bd);
+  border-radius: 4px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ex-val { flex: 1; }
+
+/* ============ SETTINGS GRID ============ */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 8px 0 16px;
+}
+@media (max-width: 600px) { .settings-grid { grid-template-columns: 1fr; } }
+.setting-item {
+  border: 1px solid var(--gray-bd);
+  border-radius: 8px;
+  padding: 14px;
+}
+.setting-name { font-size: 13px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.setting-default { font-size: 11.5px; color: var(--gray); margin-bottom: 6px; }
+.setting-default span { font-family: 'Consolas', monospace; color: var(--text); }
+.setting-desc { font-size: 13px; color: #374151; }
+
+/* ============ OUTPUT FILES ============ */
+.output-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 16px; }
+@media (max-width: 700px) { .output-cards { grid-template-columns: 1fr; } }
+.output-card {
+  border: 1.5px solid var(--gray-bd);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.output-card-head {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.output-card:nth-child(1) .output-card-head { background: #eff6ff; color: var(--blue); }
+.output-card:nth-child(2) .output-card-head { background: #f0fdf4; color: var(--green); }
+.output-card:nth-child(3) .output-card-head { background: #fff7ed; color: #c2410c; }
+.output-card-body { padding: 12px 14px; font-size: 13px; color: #374151; }
+.output-card-body ul { padding-left: 16px; margin-top: 4px; }
+.output-card-body li { margin-bottom: 3px; }
+
+/* ============ TROUBLE ============ */
+.trouble-item {
+  border: 1px solid var(--gray-bd);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.trouble-q {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fef2f2;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--red);
+  border-bottom: 1px solid #fee2e2;
+}
+.trouble-q::before { content: "❗"; font-size: 16px; flex-shrink: 0; }
+.trouble-a {
+  padding: 12px 16px;
+  font-size: 13.5px;
+}
+
+/* ============ FAQ ============ */
+.faq-item {
+  border: 1px solid var(--gray-bd);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.faq-q {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--blue-bg);
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  border-bottom: 1px solid var(--blue-bd);
+}
+.faq-q-mark { font-size: 16px; font-weight: 800; flex-shrink: 0; }
+.faq-a {
+  padding: 12px 16px;
+  font-size: 13.5px;
+}
+
+/* ============ BACK TO TOP ============ */
+.back-to-top {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 42px; height: 42px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  opacity: .85;
+  transition: opacity .2s;
+}
+.back-to-top:hover { opacity: 1; }
+
+/* ============ FOOTER ============ */
+.footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 12.5px;
+  color: var(--gray);
+  background: var(--gray-bg);
+  border-top: 1px solid var(--gray-bd);
+  border-radius: 0 0 12px 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .layout  { padding: 0 12px; }
+}
+@media print {
+  .topnav, .sidebar, .back-to-top { display: none; }
+  body    { background: #fff; font-size: 12pt; }
+  .layout { max-width: 100%; margin: 0; padding: 0; }
+  .main   { flex: 1; }
+  .hero   { -webkit-print-color-adjust: exact; print-color-adjust: exact; border-radius: 0; }
+  .section{ border: 1pt solid #ccc; page-break-inside: avoid; }
+  a::after{ content: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav" id="top">
+  <div class="topnav-title">📄 ハコ割り生成ツール</div>
+  <div class="topnav-sub">マニュアル v1.0.0</div>
+  <div class="topnav-spacer"></div>
+  <a href="クイックセットアップ.html">クイックセットアップ →</a>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-heading">目次</div>
+    <a href="#s1">1. ツールの概要</a>
+    <a href="#s2">2. システム要件</a>
+    <a href="#s3">3. インストール手順</a>
+    <a href="#s3-win" class="sub">Windows</a>
+    <a href="#s3-mac" class="sub">Mac</a>
+    <a href="#s4">4. 初回起動</a>
+    <a href="#s5">5. 画面の見方</a>
+    <a href="#s6">6. 基本の使い方</a>
+    <a href="#s7">7. ファイルの準備</a>
+    <a href="#s8">8. 詳細設定</a>
+    <a href="#s9">9. 活用事例</a>
+    <a href="#s9-1" class="sub">企業セミナー</a>
+    <a href="#s9-2" class="sub">YouTube 動画</a>
+    <a href="#s9-3" class="sub">インタビュー</a>
+    <a href="#s9-4" class="sub">英語プレゼン</a>
+    <a href="#s9-5" class="sub">タイミング調整</a>
+    <a href="#s9-6" class="sub">長尺動画</a>
+    <a href="#s10">10. 出力ファイル</a>
+    <a href="#s11">11. 停止方法</a>
+    <a href="#s12">12. トラブルシューティング</a>
+    <a href="#s13">13. FAQ</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero">
+      <h1>📄 ハコ割り生成ツール　マニュアル</h1>
+      <p>音声・映像ファイルとハコ割りテキストから SRT 字幕ファイルを自動生成するツールです。</p>
+      <div class="hero-chips">
+        <span class="chip">99言語対応</span>
+        <span class="chip">最大10GB</span>
+        <span class="chip">SRT / CSV 出力</span>
+        <span class="chip">ローカル処理（無料）</span>
+        <span class="chip">OpenAI API モード</span>
+      </div>
+    </div>
+
+    <!-- ============ 1. 概要 ============ -->
+    <div class="section" id="s1">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>ツールの概要</h2>
+      </div>
+      <div class="section-body">
+        <h3>ハコ割り生成ツールとは</h3>
+        <p>「ハコ割り」とは、動画字幕の原稿として字幕をどの単位で表示するかを決めたテキストのことです。このツールは <strong>音声・映像ファイル</strong> と <strong>ハコ割りテキスト</strong> をアップロードするだけで、Whisper AI が音声を認識し、各ハコのタイムスタンプを自動計算して <strong>SRT 字幕ファイル</strong> を生成します。</p>
+
+        <div class="code-block"><span class="c-comment">【従来の作業】</span>
+  ハコ割り作成 → 動画を見ながら1行ずつタイムスタンプを手入力 → 確認・修正
+  （60分動画で 3〜5 時間かかることも）
+
+<span class="c-comment">【このツール使用後】</span>
+  ハコ割り作成 → ファイルをアップロードしてボタンを押す → 完了
+  （60分動画で 15〜25 分）</div>
+
+        <h3>対応ファイル形式</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>種類</th><th>対応形式</th><th>備考</th></tr></thead>
+            <tbody>
+              <tr><td>音声</td><td>MP3, WAV, M4A, AAC, FLAC, OGG</td><td>そのままアップロード</td></tr>
+              <tr><td>映像</td><td>MP4, MPG, MPEG, TS</td><td>音声トラックを自動抽出</td></tr>
+              <tr><td>テキスト</td><td>TXT（UTF-8）</td><td>ハコ割りテキスト</td></tr>
+              <tr><td>最大サイズ</td><td colspan="2">10 GB</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>出力ファイル</h3>
+        <div class="output-cards">
+          <div class="output-card">
+            <div class="output-card-head">📝 output.srt</div>
+            <div class="output-card-body">SRT 字幕ファイル<ul><li>Premiere Pro</li><li>DaVinci Resolve</li><li>YouTube / Vimeo</li><li>その他 SRT 対応ツール</li></ul></div>
+          </div>
+          <div class="output-card">
+            <div class="output-card-head">📄 output.txt</div>
+            <div class="output-card-body">タイムスタンプ付きテキスト<ul><li>内容確認用</li><li>SRT と同じフォーマット</li></ul></div>
+          </div>
+          <div class="output-card">
+            <div class="output-card-head">📊 output.csv</div>
+            <div class="output-card-body">表形式データ<ul><li>Excel で開ける</li><li>No / Start / End / Duration / Text</li><li>タイミング確認に便利</li></ul></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 2. 要件 ============ -->
+    <div class="section" id="s2">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>システム要件</h2>
+      </div>
+      <div class="section-body">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>項目</th><th>最小</th><th>推奨</th></tr></thead>
+            <tbody>
+              <tr><td>OS</td><td>Windows 10 / macOS 10.15</td><td>Windows 11 / macOS 13+</td></tr>
+              <tr><td>RAM</td><td>8 GB</td><td>16 GB 以上</td></tr>
+              <tr><td>ストレージ空き容量</td><td>5 GB（Docker + モデル）</td><td>10 GB 以上</td></tr>
+              <tr><td>CPU</td><td>4 コア</td><td>8 コア以上</td></tr>
+              <tr><td>インターネット</td><td colspan="2">初回起動のみ必要（モデルダウンロード）</td></tr>
+              <tr><td><strong>Docker Desktop</strong></td><td colspan="2"><strong class="mark-rec">必須（無料）</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="notice warn">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>GPU について</strong>
+            GPU がない環境でも CPU だけで動作します。ただし長い動画（30 分以上）はCPU のみだと処理に時間がかかります。速さを優先したい場合は OpenAI API モードをご利用ください。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 3. インストール ============ -->
+    <div class="section" id="s3">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>インストール手順</h2>
+      </div>
+      <div class="section-body">
+
+        <h3 id="s3-win">Windows へのインストール</h3>
+
+        <h4>ステップ 1: Docker Desktop のインストール</h4>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-card-num">1</div><div class="step-card-body"><strong><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com/products/docker-desktop</a> を開く</strong><span class="sub">「Download for Windows」をクリックしてダウンロード</span></div></div>
+          <div class="step-card"><div class="step-card-num">2</div><div class="step-card-body"><strong>ダウンロードした <span class="inline-code">Docker Desktop Installer.exe</span> をダブルクリック</strong><span class="sub">「Use WSL 2 instead of Hyper-V」の選択肢はそのまま（チェックあり）で OK</span></div></div>
+          <div class="step-card"><div class="step-card-num">3</div><div class="step-card-body"><strong>インストール完了後、Docker Desktop を起動</strong><span class="sub">タスクバー右下にクジラのアイコン 🐳 が表示されれば準備完了</span></div></div>
+        </div>
+
+        <h4>ステップ 2: ハコ割り生成ツールのインストール</h4>
+        <div class="step-cards">
+          <div class="step-card"><div class="step-card-num">1</div><div class="step-card-body"><strong><span class="inline-code">ハコ割り生成ツール_setup.exe</span> をダブルクリック</strong><span class="sub">「このアプリがデバイスに変更を加えることを許可しますか？」→「はい」</span></div></div>
+          <div class="step-card"><div class="step-card-num">2</div><div class="step-card-body"><strong>セットアップウィザードが起動します</strong><span class="sub">「次へ」を数回クリックしてインストール完了（インストール先の変更は不要です）</span></div></div>
+          <div class="step-card"><div class="step-card-num">3</div><div class="step-card-body"><strong>「デスクトップにショートカットを作成」にチェックが入っていることを確認 →「インストール」</strong></div></div>
+          <div class="step-card"><div class="step-card-num">4</div><div class="step-card-body"><strong>完了画面で「ハコ割り生成ツールを今すぐ起動する」にチェックを入れたまま「完了」</strong></div></div>
+        </div>
+
+        <div class="notice ok">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>インストール後に作成されるもの</strong>
+            デスクトップ:「ハコ割り生成ツール 起動」「ハコ割り生成ツール 停止」のショートカット<br>
+            スタートメニュー:「ハコ割り生成ツール」グループ（起動・停止・マニュアル・アンインストール）
+          </div>
+        </div>
+
+        <h3 id="s3-mac">Mac へのインストール</h3>
+
+        <h4>ステップ 1: Mac の種類を確認する</h4>
+        <p>Appleメニュー（左上の 🍎）→「この Mac について」→「チップ」の欄を確認してください。</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>チップの表示</th><th>ダウンロードするもの</th></tr></thead>
+            <tbody>
+              <tr><td>Apple M1 / M2 / M3 / M4</td><td>Download for Mac (Apple Silicon)</td></tr>
+              <tr><td>Intel Core i◯</td><td>Download for Mac (Intel)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>ステップ 2: Docker Desktop と ハコ割り生成ツールをインストール</h4>
+        <div class="os-tabs">
+          <div class="os-tab mac" style="flex: none; width: 100%;">
+            <div class="os-tab-header">🍎 Mac インストール手順</div>
+            <div class="os-tab-body">
+              <ol class="os-step-list">
+                <li><strong><a href="https://www.docker.com/products/docker-desktop/" target="_blank">docker.com</a> から Docker Desktop をダウンロード</strong>してインストールし、起動する。メニューバーに 🐳 が出れば OK</li>
+                <li><span class="inline-code">ハコ割り生成ツール_setup.dmg</span> を開く</li>
+                <li><strong>「ハコ割り生成ツール.app」を「Applications」フォルダへドラッグ</strong></li>
+                <li>DMG ウィンドウを閉じ、デスクトップの DMG アイコンを右クリック →「取り出す」</li>
+                <li>Finder の Applications から <strong>「ハコ割り生成ツール.app」を右クリック →「開く」</strong><br><span class="sub-note">初回のみ Gatekeeper の警告が出ます。ダイアログで「開く」をクリックしてください。</span></li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="notice warn">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>「開発元を確認できない」と表示された場合</strong>
+            Finder で「ハコ割り生成ツール.app」を <strong>右クリック（Control+クリック）→「開く」</strong> を選択してください。表示されるダイアログで「開く」をクリックすれば起動できます。次回からは通常通りダブルクリックで起動できます。<br><br>
+            または: システム設定 → プライバシーとセキュリティ → 「"ハコ割り生成ツール"は…」→「このまま開く」
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 4. 初回起動 ============ -->
+    <div class="section" id="s4">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>初回起動とブラウザの開き方</h2>
+      </div>
+      <div class="section-body">
+        <h3>初回起動の流れ</h3>
+        <p>「ハコ割り生成ツール 起動」をダブルクリックすると、コマンドウィンドウ（ターミナル）が開き、以下のように進みます。</p>
+        <div class="code-block"><span class="c-key">============================================</span>
+  ハコ割り生成ツール
+<span class="c-key">============================================</span>
+
+Docker Desktop を起動しています...
+Docker が起動しました。
+
+<span class="c-em">初回起動: Docker イメージをビルドしています。
+Whisper モデルのダウンロード（約 800MB）を含むため、
+ネットワーク速度により 5〜15 分かかる場合があります。</span>
+
+[ビルドのログが流れます...]
+
+ビルド完了。
+アプリを起動しています...
+
+<span class="c-ok">============================================
+  起動完了！
+  ブラウザで http://localhost:8503 が開きます
+============================================</span></div>
+        <div class="notice ok">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>2回目以降は数秒で起動します</strong>
+            初回のみモデルのダウンロードが発生します。2回目以降はブラウザが自動で開くまで数秒です。
+          </div>
+        </div>
+        <h3>ブラウザが自動で開かない場合</h3>
+        <p>ブラウザのアドレスバーに以下を直接入力してください。</p>
+        <div class="code-block">http://localhost:8503</div>
+      </div>
+    </div>
+
+    <!-- ============ 5. 画面の見方 ============ -->
+    <div class="section" id="s5">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>画面の見方</h2>
+      </div>
+      <div class="section-body">
+        <h3>メイン画面</h3>
+        <div class="code-block">┌─────────────────────────────────────────────────────────────┐
+│  📄 ハコ割り生成ツール                           ≡ サイドバー│
+│  音声ファイルとハコ割りテキストをアップロードして            │
+│  SRT を生成します。                                         │
+│                                                             │
+│  ┌─────────────────────┐  ┌──────────────────────────────┐ │
+│  │  <span class="c-key">音声・映像ファイル</span>  │  │  <span class="c-key">ハコ割りテキスト (.txt)</span>     │ │
+│  │                     │  │                              │ │
+│  │ ドラッグ&amp;ドロップ   │  │  ドラッグ&amp;ドロップ           │ │
+│  │ またはクリックして  │  │  またはクリックして          │ │
+│  │ ファイルを選択      │  │  ファイルを選択              │ │
+│  └─────────────────────┘  └──────────────────────────────┘ │
+│                                                             │
+│  ◉ 空行区切り（ブロック間に空行）                           │
+│  ○ 改行区切り（1行＝1ブロック）                             │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                <span class="c-ok">▶ SRT を生成</span>                         │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘</div>
+
+        <h3>サイドバー（⚙️ 詳細設定）</h3>
+        <p>画面左端の「&gt;」または「≡」をクリックすると開きます。音声認識エンジン・言語・タイミング設定を変更できます。</p>
+        <div class="code-block">⚙️ 詳細設定
+──────────────────────────────────
+🎙️ 音声認識エンジン
+  ◉ <span class="c-ok">ローカル処理（無料・APIキー不要）</span>
+  ○ OpenAI API（高速・要APIキー）
+
+  Whisperモデル: [<span class="c-key">turbo</span> ▼]
+
+──────────────────────────────────
+🌐 認識言語
+  言語: [<span class="c-key">Japanese / 日本語</span> ▼]
+
+──────────────────────────────────
+⏱️ タイミング設定
+  フレームレート (fps):          <span class="c-val">30</span>
+  グローバルオフセット (秒):    <span class="c-val">0.00</span>
+  後端パディング (秒):           <span class="c-val">0.20</span>
+  最小表示時間 (秒):             <span class="c-val">0.80</span>
+  無音閾値 (ms):                <span class="c-val">400</span></div>
+      </div>
+    </div>
+
+    <!-- ============ 6. 使い方 ============ -->
+    <div class="section" id="s6">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>基本的な使い方</h2>
+      </div>
+      <div class="section-body">
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-card-num">1</div>
+            <div class="step-card-body">
+              <strong>音声・映像ファイルをアップロード</strong>
+              「音声・映像ファイル」エリアをクリックしてファイルを選択、またはドラッグ&amp;ドロップします。<br>
+              <span class="sub">対応形式: MP3 / WAV / MP4 / MPG / MPEG / TS / M4A / AAC / FLAC / OGG</span>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">2</div>
+            <div class="step-card-body">
+              <strong>ハコ割りテキストをアップロード</strong>
+              UTF-8 で保存されたテキストファイル（.txt）をアップロードします。
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">3</div>
+            <div class="step-card-body">
+              <strong>区切り方式を選択</strong>
+              テキストの形式に合わせて「空行区切り」または「改行区切り」を選びます（詳細は7章）。
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">4</div>
+            <div class="step-card-body">
+              <strong>「▶ SRT を生成」をクリック</strong>
+              処理が始まり、ステップごとの進捗がリアルタイムで表示されます。
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">5</div>
+            <div class="step-card-body">
+              <strong>ダウンロード</strong>
+              完了後に <span class="inline-code">output.srt</span> <span class="inline-code">output.txt</span> <span class="inline-code">output.csv</span> の 3 ボタンが表示されます。クリックするとダウンロードできます。<br>
+              <span class="sub">同じファイルはデスクトップの「ハコ割り生成ツール_output」フォルダにも保存されます。</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>処理中の表示例</h3>
+        <div class="code-block">SRT を生成中...  <span class="c-ok">━━━━━━━━━━━━━━━━━</span> 20%
+  ステップ 2/6: 音声認識中（しばらくお待ちください）
+
+  音声ファイル: seminar_20260601.ts
+  デバイス: cpu
+  [0] 音声変換中 (ffmpeg)...
+  [1] Whisper 音声認識実行中...
+    モデル turbo をロード中...
+    Transcribe（音声認識）実行中...
+    認識単語数: 1842
+  [2] DP アライメント実行中...
+  [3] タイミング調整中...
+  [5] SRT/TXT/CSV 書き出し中...
+  <span class="c-ok">[完了] ブロック数: 96</span>
+  処理時間: 847.3 秒</div>
+      </div>
+    </div>
+
+    <!-- ============ 7. ファイル準備 ============ -->
+    <div class="section" id="s7">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>入力ファイルの準備方法</h2>
+      </div>
+      <div class="section-body">
+        <h3>ハコ割りテキストの文字コード</h3>
+        <p>テキストファイルは必ず <strong>UTF-8</strong> で保存してください。</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>ソフト</th><th>保存方法</th></tr></thead>
+            <tbody>
+              <tr><td>メモ帳（Windows）</td><td>ファイル → 名前を付けて保存 →「文字コード」を <strong>UTF-8</strong> に変更して保存</td></tr>
+              <tr><td>TextEdit（Mac）</td><td>フォーマット →「標準テキストにする」→「.txt で保存」を選択</td></tr>
+              <tr><td>VS Code / テキストエディタ</td><td>右下の文字コード表示をクリック → UTF-8 を選択して保存</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>空行区切り形式（推奨）</h3>
+        <p>字幕ブロックの間に空行（改行のみの行）を入れます。1 ブロック内は複数行でも問題ありません。</p>
+        <div class="code-block">おはようございます。
+本日は良いお天気ですね。
+<span class="c-comment">← 空行</span>
+今日は３つのことを
+お話しします。
+<span class="c-comment">← 空行</span>
+最初のテーマは
+「売上向上のための
+戦略について」です。</div>
+
+        <h3>改行区切り形式</h3>
+        <p>1 行 = 1 字幕ブロックとして扱われます。インタビューや会話形式に適しています。</p>
+        <div class="code-block">おはようございます。本日は良いお天気ですね。
+今日は３つのことをお話しします。
+最初のテーマは「売上向上のための戦略について」です。</div>
+
+        <h3>よくある失敗と対策</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>症状</th><th>原因</th><th>対策</th></tr></thead>
+            <tbody>
+              <tr><td>字幕の数が少ない（1〜2個しかない）</td><td>区切りが入っておらず全体が1ブロックになっている</td><td>空行区切り or 改行区切りを正しく選択</td></tr>
+              <tr><td>文字化けする</td><td>Shift-JIS で保存されている</td><td>UTF-8 で保存し直す</td></tr>
+              <tr><td>タイミングが大きくずれる</td><td>音声の内容とテキストが一致していない</td><td>テキストが音声の書き起こしか確認する</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 8. 設定 ============ -->
+    <div class="section" id="s8">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <h2>詳細設定リファレンス</h2>
+      </div>
+      <div class="section-body">
+        <h3>音声認識エンジン</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>モード</th><th>費用</th><th>速度</th><th>ファイルサイズ</th><th>特徴</th></tr></thead>
+            <tbody>
+              <tr><td><strong>ローカル処理</strong>（デフォルト）</td><td>無料</td><td>普通〜遅め</td><td>10 GB まで</td><td>インターネット不要・完全プライベート</td></tr>
+              <tr><td><strong>OpenAI API</strong></td><td>$0.006/分</td><td>高速</td><td>25 MB まで（自動変換）</td><td>高速・高精度・要 API キー</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="notice info">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>API キーの保存について</strong>
+            入力した API キーは自動的に保存され、次回以降は入力不要です。保存先: <span class="inline-code">ハコ割り生成ツール_output/.hako_config.json</span>
+          </div>
+        </div>
+
+        <h3>Whisper モデル（ローカル処理のみ）</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>モデル</th><th>精度</th><th>速度</th><th>推奨用途</th></tr></thead>
+            <tbody>
+              <tr><td><strong>turbo</strong> <span class="mark-rec">★ デフォルト</span></td><td>★★★★★</td><td>★★★★★</td><td>通常はこれで十分</td></tr>
+              <tr><td>large-v3</td><td>★★★★★</td><td>★★</td><td>最高精度が必要なとき</td></tr>
+              <tr><td>medium</td><td>★★★★</td><td>★★★</td><td>バランス重視</td></tr>
+              <tr><td>small / base / tiny</td><td>★★〜★★★</td><td>★★★★〜★★★★★</td><td>試し処理・高速優先</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>タイミング設定</h3>
+        <div class="settings-grid">
+          <div class="setting-item">
+            <div class="setting-name">グローバルオフセット（秒）</div>
+            <div class="setting-default">デフォルト: <span>0.00</span></div>
+            <div class="setting-desc">全タイムスタンプに一律で加算するオフセット。字幕が全体的に早い・遅い場合に調整します。<br>例: 字幕が 0.3 秒遅れる → <span class="inline-code">-0.30</span> に設定</div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-name">後端パディング（秒）</div>
+            <div class="setting-default">デフォルト: <span>0.20</span></div>
+            <div class="setting-desc">各ブロックの終了時刻を延ばす秒数。余韻を持たせたい場合は増やします（例: 0.50）。</div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-name">最小表示時間（秒）</div>
+            <div class="setting-default">デフォルト: <span>0.80</span></div>
+            <div class="setting-desc">各ブロックを最低でも何秒間表示するかを指定します。短いブロックが一瞬で消えるのを防ぎます。</div>
+          </div>
+          <div class="setting-item">
+            <div class="setting-name">無音閾値（ms）</div>
+            <div class="setting-default">デフォルト: <span>400</span></div>
+            <div class="setting-desc">この時間より短い無音区間は前のブロックを延ばして埋めます。自然な間での区切れを防ぎます。</div>
+          </div>
+        </div>
+
+        <div class="notice info">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>キャッシュを活用したタイミング再調整</strong>
+            「書き起こしキャッシュを使用」にチェックが入った状態でオフセットを変更して再生成すると、Whisper の音声認識がスキップされ数秒で完了します。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 9. 活用事例 ============ -->
+    <div class="section" id="s9">
+      <div class="section-header">
+        <div class="section-num">9</div>
+        <h2>活用事例</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 事例1 -->
+        <div class="example" id="s9-1">
+          <div class="example-header">
+            <span class="example-num">事例 1</span>
+            企業セミナーの字幕制作（60 分 TS ファイル）
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">音声ファイル</span><span class="ex-val"><span class="inline-code">seminar_20260601.ts</span>（4.2 GB）</span></div>
+            <div class="ex-row"><span class="ex-label">テキスト</span><span class="ex-val"><span class="inline-code">seminar_hako.txt</span>（空行区切り）</span></div>
+            <div class="ex-row"><span class="ex-label">設定</span><span class="ex-val">エンジン: ローカル / モデル: turbo / 言語: Japanese / 日本語</span></div>
+            <div class="ex-row"><span class="ex-label">処理時間</span><span class="ex-val">約 15〜25 分（CPU）</span></div>
+            <p style="font-size:13px;color:#64748b;margin-top:8px;">ハコ割りテキストの例:</p>
+            <div class="code-block">本日はお忙しい中
+お集まりいただき
+ありがとうございます。
+
+本日のテーマは
+「DX 推進のための
+AI 活用」です。
+
+まず、現状の課題から
+お話しします。</div>
+            <p style="font-size:13px;color:#64748b;">生成される SRT（冒頭部分）:</p>
+            <div class="code-block"><span class="c-val">1</span>
+<span class="c-key">00:00:02,400</span> --> <span class="c-key">00:00:06,133</span>
+本日はお忙しい中
+お集まりいただき
+ありがとうございます。
+
+<span class="c-val">2</span>
+<span class="c-key">00:00:06,767</span> --> <span class="c-key">00:00:10,200</span>
+本日のテーマは
+「DX 推進のための
+AI 活用」です。</div>
+          </div>
+        </div>
+
+        <!-- 事例2 -->
+        <div class="example" id="s9-2">
+          <div class="example-header">
+            <span class="example-num">事例 2</span>
+            YouTube 動画に字幕を追加（OpenAI API で高速処理）
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">音声ファイル</span><span class="ex-val"><span class="inline-code">product_demo.mp4</span>（280 MB・10 分）</span></div>
+            <div class="ex-row"><span class="ex-label">設定</span><span class="ex-val">エンジン: <strong>OpenAI API</strong> / 言語: Japanese / 日本語</span></div>
+            <div class="ex-row"><span class="ex-label">処理時間</span><span class="ex-val">約 1〜2 分</span></div>
+            <div class="ex-row"><span class="ex-label">費用</span><span class="ex-val">10 分 × $0.006 = 約 $0.06（約 10 円）</span></div>
+            <p style="font-size:13.5px;margin-top:10px;"><strong>YouTube への字幕アップロード手順:</strong></p>
+            <ol style="font-size:13.5px;padding-left:20px;margin-top:4px;">
+              <li>YouTube Studio を開く</li>
+              <li>動画を選択 →「字幕」タブ</li>
+              <li>「字幕をアップロード」→ <span class="inline-code">output.srt</span> を選択</li>
+              <li>「保存」</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 事例3 -->
+        <div class="example" id="s9-3">
+          <div class="example-header">
+            <span class="example-num">事例 3</span>
+            インタビュー動画の字幕（改行区切り）
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">音声ファイル</span><span class="ex-val"><span class="inline-code">interview.mp3</span>（30 分）</span></div>
+            <div class="ex-row"><span class="ex-label">区切り方式</span><span class="ex-val"><strong>改行区切り</strong>（質問と回答が交互の形式に最適）</span></div>
+            <p style="font-size:13px;color:#64748b;margin-top:8px;">ハコ割りテキストの例（改行区切り）:</p>
+            <div class="code-block">今日はよろしくお願いします。
+はい、よろしくお願いします。
+まず、自己紹介からお願いできますか。
+はい、私は〇〇株式会社の営業部長の田中と申します。
+入社してから 20 年になります。
+これまでどのようなお仕事をされてきましたか。
+最初の 10 年は国内営業を担当しておりました。</div>
+          </div>
+        </div>
+
+        <!-- 事例4 -->
+        <div class="example" id="s9-4">
+          <div class="example-header">
+            <span class="example-num">事例 4</span>
+            英語プレゼンに英語字幕
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">音声ファイル</span><span class="ex-val"><span class="inline-code">presentation.mp4</span></span></div>
+            <div class="ex-row"><span class="ex-label">言語設定</span><span class="ex-val"><strong>English / 英語 [en]</strong> に変更（重要）</span></div>
+            <p style="font-size:13px;color:#64748b;margin-top:8px;">ハコ割りテキストの例（英語・空行区切り）:</p>
+            <div class="code-block">Good morning, everyone.
+Thank you for joining us today.
+
+Today, I'd like to present
+our quarterly results
+for Q1 2026.
+
+Our revenue increased
+by 15% compared to
+the same period last year.</div>
+            <div class="notice info">
+              <div class="notice-icon"></div>
+              <div class="notice-body">言語を正確に指定することで認識精度が大幅に向上します。自動検出よりも明示的な言語指定を推奨します。</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 事例5 -->
+        <div class="example" id="s9-5">
+          <div class="example-header">
+            <span class="example-num">事例 5</span>
+            タイミングを微調整する（キャッシュ活用）
+          </div>
+          <div class="example-body">
+            <p style="font-size:14px;margin-bottom:10px;"><strong>状況:</strong> 生成した SRT を再生すると、全体的に字幕が 0.5 秒ほど遅れて表示された。</p>
+            <div class="step-cards" style="margin:0;">
+              <div class="step-card"><div class="step-card-num">1</div><div class="step-card-body"><strong>サイドバーの「グローバルオフセット」を <span class="inline-code">0.00</span> → <span class="inline-code">-0.50</span> に変更</strong></div></div>
+              <div class="step-card"><div class="step-card-num">2</div><div class="step-card-body"><strong>「書き起こしキャッシュを使用」にチェックが入っていることを確認</strong><span class="sub">チェックが入っていれば Whisper の音声認識はスキップされます</span></div></div>
+              <div class="step-card"><div class="step-card-num">3</div><div class="step-card-body"><strong>「▶ SRT を生成」を再クリック → 数秒で完了</strong></div></div>
+            </div>
+            <div class="code-block" style="margin-top:12px;">  <span class="c-em">キャッシュを使用します</span>
+  [2] DP アライメント実行中...
+  [3] タイミング調整中...
+  <span class="c-ok">[完了] ブロック数: 96</span>
+  処理時間: <span class="c-val">4.2 秒</span></div>
+          </div>
+        </div>
+
+        <!-- 事例6 -->
+        <div class="example" id="s9-6">
+          <div class="example-header">
+            <span class="example-num">事例 6</span>
+            長尺動画（120 分）を速く処理する
+          </div>
+          <div class="example-body">
+            <div class="tbl-wrap" style="margin:0;">
+              <table>
+                <thead><tr><th>方法</th><th>処理時間</th><th>費用</th><th>特徴</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>OpenAI API モード</strong></td><td>約 10〜15 分</td><td>約 $0.72（約 110 円）</td><td>最も手軽</td></tr>
+                  <tr><td>medium モデルに変更</td><td>turbo の約 1.5 倍</td><td>無料</td><td>精度やや低下</td></tr>
+                  <tr><td>動画を分割して処理</td><td>並行作業で短縮可能</td><td>無料</td><td>手間がかかる</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 10. 出力ファイル ============ -->
+    <div class="section" id="s10">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <h2>出力ファイルの活用方法</h2>
+      </div>
+      <div class="section-body">
+        <p>出力先: デスクトップ → <span class="inline-code">ハコ割り生成ツール_output</span> フォルダ</p>
+
+        <h3>output.srt の構造</h3>
+        <div class="code-block"><span class="c-val">1</span>
+<span class="c-key">00:00:02,400</span> --> <span class="c-key">00:00:05,800</span>
+本日はお忙しい中
+お集まりいただきありがとうございます。
+
+<span class="c-val">2</span>
+<span class="c-key">00:00:06,200</span> --> <span class="c-key">00:00:10,100</span>
+本日のテーマをお伝えします。</div>
+
+        <h3>Premiere Pro への読み込み</h3>
+        <ol style="font-size:14px;padding-left:20px;margin-bottom:16px;">
+          <li>プロジェクトパネルを右クリック →「読み込み」</li>
+          <li><span class="inline-code">output.srt</span> を選択</li>
+          <li>タイムラインにドラッグして映像クリップの上に配置</li>
+          <li>キャプションパネルでフォント・サイズを調整</li>
+        </ol>
+
+        <h3>output.csv の活用</h3>
+        <div class="code-block"><span class="c-key">No, Start,         End,           Duration, Text</span>
+1,  00:00:02.400, 00:00:05.800, 3.4,     "本日はお忙しい中↵お集まりいただきありがとうございます。"
+2,  00:00:06.200, 00:00:10.100, 3.9,     "本日のテーマをお伝えします。"</div>
+        <p>Excel で開いて Duration 列を確認することで、短すぎるブロックや長すぎるブロックを素早く特定できます。</p>
+      </div>
+    </div>
+
+    <!-- ============ 11. 停止 ============ -->
+    <div class="section" id="s11">
+      <div class="section-header">
+        <div class="section-num">11</div>
+        <h2>アプリの停止方法</h2>
+      </div>
+      <div class="section-body">
+        <p>ブラウザのタブを閉じただけではアプリがバックグラウンドで動き続けます。不要な場合は停止してください。</p>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>OS</th><th>停止方法</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td>デスクトップの「ハコ割り生成ツール 停止」をダブルクリック</td></tr>
+              <tr><td>Mac</td><td>Applications の「ハコ割り生成ツール_停止.app」をダブルクリック</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="notice info">
+          <div class="notice-icon"></div>
+          <div class="notice-body">PC を再起動すれば自動的に停止します。次回使用時はもう一度「起動」ショートカットをダブルクリックしてください。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 12. トラブル ============ -->
+    <div class="section" id="s12">
+      <div class="section-header">
+        <div class="section-num">12</div>
+        <h2>トラブルシューティング</h2>
+      </div>
+      <div class="section-body">
+
+        <div class="trouble-item">
+          <div class="trouble-q">アプリが起動しない / ブラウザが開かない</div>
+          <div class="trouble-a">
+            <ol style="padding-left:20px;font-size:13.5px;">
+              <li>Docker Desktop が起動しているか確認する（タスクバー / メニューバーの 🐳 アイコン）</li>
+              <li>ブラウザで <span class="inline-code">http://localhost:8503</span> を手動で開いてみる</li>
+              <li>コマンドウィンドウ（ターミナル）のエラーメッセージを確認する</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="trouble-item">
+          <div class="trouble-q">初回起動でビルドが失敗する</div>
+          <div class="trouble-a">
+            <ul style="padding-left:20px;font-size:13.5px;">
+              <li>インターネット接続が正常か確認する</li>
+              <li>Docker Desktop を最新バージョンに更新する</li>
+              <li>ウイルス対策ソフトが Docker の通信をブロックしていないか確認する</li>
+              <li>少し時間を置いてから再試行する（Docker Hub のサーバー負荷の場合）</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="trouble-item">
+          <div class="trouble-q">音声認識の精度が低い</div>
+          <div class="trouble-a">
+            <div class="tbl-wrap" style="margin:0;">
+              <table>
+                <thead><tr><th>状況</th><th>対処</th></tr></thead>
+                <tbody>
+                  <tr><td>言語設定が違う</td><td>サイドバーで音声の言語を正しく選択する</td></tr>
+                  <tr><td>BGM や雑音が多い</td><td>事前に音声を編集してノイズを除去する</td></tr>
+                  <tr><td>速い話し方や方言</td><td>large-v3 モデルまたは OpenAI API を試す</td></tr>
+                  <tr><td>小さいモデルを使用</td><td>turbo または large-v3 に変更する</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="trouble-item">
+          <div class="trouble-q">字幕のタイミングがずれる</div>
+          <div class="trouble-a">
+            <ul style="padding-left:20px;font-size:13.5px;">
+              <li><strong>全体的にずれる:</strong> グローバルオフセットで調整（事例 5 参照）</li>
+              <li><strong>特定の箇所だけずれる:</strong> ハコ割りテキストと音声の内容が一致しているか確認する</li>
+              <li><strong>字幕が早く消える:</strong>「後端パディング」を 0.20 → 0.50 に増やす</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="trouble-item">
+          <div class="trouble-q">Mac で「開発元を確認できない」と表示される</div>
+          <div class="trouble-a">
+            「ハコ割り生成ツール.app」を<strong>右クリック →「開く」</strong>を選択してください。表示されるダイアログで「開く」をクリックすれば起動できます（3章参照）。
+          </div>
+        </div>
+
+        <div class="trouble-item">
+          <div class="trouble-q">テキストが文字化けする</div>
+          <div class="trouble-a">
+            ハコ割りテキストを <strong>UTF-8</strong> で保存し直してください（7章参照）。
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ 13. FAQ ============ -->
+    <div class="section" id="s13">
+      <div class="section-header">
+        <div class="section-num">13</div>
+        <h2>よくある質問（FAQ）</h2>
+      </div>
+      <div class="section-body">
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>費用はかかりますか？</div>
+          <div class="faq-a">ローカル処理モードは完全無料です。OpenAI API モードを使う場合のみ OpenAI への支払いが発生します（$0.006/分）。</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>処理したファイルはどこかに送られますか？</div>
+          <div class="faq-a">ローカル処理モードでは音声データは一切外部に送信されません。完全にプライベートな処理です。OpenAI API モードを使用した場合は、音声データが OpenAI に送信されます。</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>処理時間の目安は？</div>
+          <div class="faq-a">
+            <div class="tbl-wrap" style="margin:4px 0 0;">
+              <table>
+                <thead><tr><th>動画の長さ</th><th>ローカル（CPU・turbo）</th><th>OpenAI API</th></tr></thead>
+                <tbody>
+                  <tr><td>5 分</td><td>約 1〜2 分</td><td>約 30 秒</td></tr>
+                  <tr><td>30 分</td><td>約 5〜10 分</td><td>約 2〜3 分</td></tr>
+                  <tr><td>60 分</td><td>約 15〜25 分</td><td>約 4〜6 分</td></tr>
+                  <tr><td>120 分</td><td>約 30〜50 分</td><td>約 8〜12 分</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>同じ音声でテキストだけ変えて再生成できますか？</div>
+          <div class="faq-a">できます。「書き起こしキャッシュを使用」にチェックが入っていれば Whisper の音声認識はスキップされ、数秒で再生成できます。</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>インターネットなしで使えますか？</div>
+          <div class="faq-a">初回起動のみインターネットが必要です（Whisper モデルのダウンロード）。2回目以降は完全にオフラインで動作します。</div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q"><span class="faq-q-mark">Q</span>アンインストール方法は？</div>
+          <div class="faq-a">
+            <strong>Windows:</strong> スタートメニュー →「ハコ割り生成ツール」→「アンインストール」<br>
+            <strong>Mac:</strong> Finder → Applications →「ハコ割り生成ツール.app」をゴミ箱へ<br><br>
+            Docker イメージも削除する場合（ストレージ節約）:<br>
+            アプリ停止後、ターミナルで <span class="inline-code">docker rmi hako-srt-app</span> を実行
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer">
+      ハコ割り生成ツール v1.0.0　|　<a href="http://localhost:8503">http://localhost:8503</a>　|　最終更新: 2026-06-09
+    </div>
+
+  </main>
+</div>
+
+<a href="#top" class="back-to-top" title="先頭に戻る">↑</a>
+
+</body>
+</html>
