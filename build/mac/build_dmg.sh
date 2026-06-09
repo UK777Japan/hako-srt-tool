@@ -79,7 +79,7 @@ echo "      その他パッケージをインストール中..."
 echo "      パッケージインストール完了"
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 3. ffmpeg をセットアップ（Homebrew + dylibbundler でポータブル化）
+# 3. ffmpeg をセットアップ（imageio-ffmpeg の静的バイナリを使用）
 # ──────────────────────────────────────────────────────────────────────────────
 echo ""
 echo "[3/6] ffmpeg をセットアップ..."
@@ -87,28 +87,18 @@ echo "[3/6] ffmpeg をセットアップ..."
 FFMPEG_BIN_DIR="$TMP_DIR/tools/ffmpeg/bin"
 mkdir -p "$FFMPEG_BIN_DIR"
 
-if ! command -v brew &>/dev/null; then
-    echo "      [エラー] Homebrew が必要です。https://brew.sh からインストールしてください。"
+# imageio-ffmpeg が提供するポータブル静的バイナリを使用（Homebrew 不要）
+"$PYTHON_EXE" -m pip install imageio-ffmpeg --quiet
+
+FFMPEG_BINARY=$("$PYTHON_EXE" -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())")
+if [ ! -f "$FFMPEG_BINARY" ]; then
+    echo "      [エラー] ffmpeg バイナリが見つかりません: $FFMPEG_BINARY"
     exit 1
 fi
-
-echo "      brew install ffmpeg dylibbundler..."
-brew install ffmpeg dylibbundler --quiet 2>/dev/null || brew upgrade ffmpeg dylibbundler --quiet 2>/dev/null || true
-
-FFMPEG_BINARY="$(which ffmpeg)"
 cp "$FFMPEG_BINARY" "$FFMPEG_BIN_DIR/ffmpeg"
 chmod +x "$FFMPEG_BIN_DIR/ffmpeg"
 
-echo "      dylib を同梱中（dylibbundler）..."
-dylibbundler \
-    -od \
-    -b \
-    -x "$FFMPEG_BIN_DIR/ffmpeg" \
-    -d "$FFMPEG_BIN_DIR/" \
-    -p @loader_path/ \
-    2>/dev/null
-
-echo "      ffmpeg セットアップ完了"
+echo "      ffmpeg セットアップ完了: $(basename "$FFMPEG_BINARY")"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # 4. Whisper モデルをダウンロード（EXE に同梱してインストール後すぐ使える）
