@@ -414,6 +414,192 @@ def generate_srt(
     return srt_path, txt_path, csv_path
 
 # ---------------------------------------------------------------------------
+# 原稿なし文字起こし（ヘルパー）
+# ---------------------------------------------------------------------------
+def _transcribe_segments_local(
+    wav: Path,
+    model_name: str,
+    device: str,
+    language: str,
+    cache_path: Optional[Path],
+    log: Callable[[str], None],
+) -> List[Dict]:
+    if cache_path and cache_path.exists():
+        log("  キャッシュを使用します")
+        return json.loads(cache_path.read_text(encoding="utf-8"))
+
+    import stable_whisper
+    log(f"  モデル {model_name} をロード中...")
+    _whisper_cache = os.environ.get("WHISPER_CACHE_DIR") or None
+    model = stable_whisper.load_model(model_name, device=device, download_root=_whisper_cache)
+
+    lang_arg = None if language == "auto" else language
+    log("  Transcribe（音声認識）実行中...")
+    result = model.transcribe(str(wav), language=lang_arg, vad=True)
+
+    segments = []
+    for seg in result.to_dict().get("segments", []):
+        text = seg.get("text", "").strip()
+        if text:
+            segments.append({
+                "text":  text,
+                "start": float(seg["start"]),
+                "end":   float(seg["end"]),
+            })
+
+    if cache_path:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps(segments, ensure_ascii=False, indent=2), encoding="utf-8")
+    return segments
+
+
+def _transcribe_segments_api(
+    wav: Path,
+    language: str,
+    api_key: str,
+    cache_path: Optional[Path],
+    log: Callable[[str], None],
+) -> List[Dict]:
+    if cache_path and cache_path.exists():
+        log("  キャッシュを使用します")
+        return json.loads(cache_path.read_text(encoding="utf-8"))
+
+    from openai import OpenAI
+
+    mp3_path = wav.parent / "api_tr_input.mp3"
+    log("  API 用に音声を MP3 変換中...")
+    subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-q:a", "5", str(mp3_path)],
+        check=True,
+    )
+    size_mb = mp3_path.stat().st_size / (1024 ** 2)
+    log(f"  送信サイズ: {size_mb:.1f} MB (上限 25 MB)")
+    if size_mb > 24.5:
+        raise ValueError(
+            f"音声ファイルが OpenAI API の上限 25 MB を超えています（{size_mb:.1f} MB）。"
+            "より短い音声を使用するか、ローカルモードをお使いください。"
+        )
+
+    client = OpenAI(api_key=api_key)
+    log("  OpenAI Whisper API (whisper-1) に送信中...")
+    lang_arg = None if language == "auto" else language
+    with mp3_path.open("rb") as f:
+        response = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=f,
+            language=lang_arg,
+            response_format="verbose_json",
+            timestamp_granularities=["segment"],
+        )
+
+    segments = []
+    for seg in getattr(response, "segments", []) or []:
+        text = getattr(seg, "text", "").strip()
+        if text:
+            segments.append({
+                "text":  text,
+                "start": float(seg.start),
+                "end":   float(seg.end),
+            })
+
+    if cache_path:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps(segments, ensure_ascii=False, indent=2), encoding="utf-8")
+    return segments
+
+
+# ---------------------------------------------------------------------------
+# 原稿なし文字起こし（メイン API）
+# ---------------------------------------------------------------------------
+def transcribe_only(
+    audio_path: Path,
+    output_dir: Path,
+    model_name: str = "turbo",
+    fps: int = 30,
+    global_offset: float = 0.00,
+    post_out_pad_sec: float = 0.2,
+    min_disp_sec: float = 0.8,
+    silence_threshold_ms: float = 400,
+    device: str = "cpu",
+    use_cache: bool = True,
+    language: str = "ja",
+    use_api: bool = False,
+    api_key: str = "",
+    log: Optional[Callable[[str], None]] = None,
+) -> Tuple[Path, Path, Path]:
+    """音声ファイルのみから SRT を生成（原稿なし・Whisper セグメントを直接変換）。"""
+    if log is None:
+        log = print
+
+    min_gap = 1.0 / fps
+    output_dir.mkdir(parents=True, exist_ok=True)
+    tmp_dir = output_dir / "_tmp"
+    tmp_dir.mkdir(exist_ok=True)
+
+    wav = tmp_dir / "norm_tr.wav"
+    log("[0] 音声変換中 (ffmpeg)...")
+    subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", str(audio_path),
+         "-ac", "1", "-ar", "16000", str(wav)],
+        check=True,
+    )
+
+    cache_path = (tmp_dir / "whisper_tr_cache.json") if use_cache else None
+
+    if use_api:
+        log("[1] OpenAI API 音声認識実行中...")
+        segments = _transcribe_segments_api(wav, language, api_key, cache_path, log)
+    else:
+        log("[1] Whisper 音声認識実行中...")
+        segments = _transcribe_segments_local(wav, model_name, device, language, cache_path, log)
+
+    log(f"  認識セグメント数: {len(segments)}")
+
+    blocks = apply_adjustments(
+        segments, global_offset, post_out_pad_sec,
+        min_disp_sec, min_gap, 33, silence_threshold_ms,
+    )
+    blocks = resolve_overlaps(blocks, min_gap, min_disp_sec)
+
+    for b in blocks:
+        b["start"] = snap(b["start"], fps)
+        b["end"]   = snap(b["end"],   fps)
+    blocks = resolve_overlaps(blocks, min_gap, min_disp_sec)
+
+    log("[完了] SRT/TXT/CSV 書き出し中...")
+    srt_path = output_dir / "transcribe.srt"
+    txt_path = output_dir / "transcribe.txt"
+    csv_path = output_dir / "transcribe.csv"
+
+    with srt_path.open("w", encoding="utf-8-sig") as f:
+        for i, b in enumerate(blocks, 1):
+            f.write(f"{i}\n{fmt_ts(b['start'])} --> {fmt_ts(b['end'])}\n{b['text']}\n\n")
+
+    txt_path.write_text(
+        "".join(f"{b['text']}\n" for b in blocks),
+        encoding="utf-8-sig",
+    )
+
+    def fmt_tc(t: float) -> str:
+        t = max(0.0, float(t))
+        total_ms = int(t * 1000)
+        ms = total_ms % 1000
+        ts = total_ms // 1000
+        return f"{ts // 3600:02}:{(ts % 3600) // 60:02}:{ts % 60:02}.{ms:03}"
+
+    buf = io.StringIO()
+    writer = csv.writer(buf, lineterminator="\n")
+    writer.writerow(["No", "Start", "End", "Duration", "Text"])
+    for i, b in enumerate(blocks, 1):
+        duration = round(b["end"] - b["start"], 3)
+        writer.writerow([i, fmt_tc(b["start"]), fmt_tc(b["end"]), duration, b["text"]])
+    csv_path.write_text("﻿" + buf.getvalue(), encoding="utf-8")
+
+    log(f"[完了] セグメント数: {len(blocks)}")
+    return srt_path, txt_path, csv_path
+
+
+# ---------------------------------------------------------------------------
 # CLI エントリポイント（後方互換）
 # ---------------------------------------------------------------------------
 def main():

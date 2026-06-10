@@ -501,7 +501,7 @@ a:hover { text-decoration: underline; }
 <!-- TOP NAV -->
 <nav class="topnav" id="top">
   <div class="topnav-title">📄 ハコ割り生成ツール</div>
-  <div class="topnav-sub">マニュアル v1.0.0</div>
+  <div class="topnav-sub">マニュアル v1.1.0</div>
   <div class="topnav-spacer"></div>
   <a href="クイックセットアップ.html">クイックセットアップ →</a>
 </nav>
@@ -532,6 +532,11 @@ a:hover { text-decoration: underline; }
     <a href="#s11">11. 停止方法</a>
     <a href="#s12">12. トラブルシューティング</a>
     <a href="#s13">13. FAQ</a>
+    <a href="#s14">14. 文字起こし（原稿なし）</a>
+    <a href="#s14-when" class="sub">使う場面</a>
+    <a href="#s14-how" class="sub">使い方</a>
+    <a href="#s14-output" class="sub">出力ファイル</a>
+    <a href="#s14-tips" class="sub">精度を上げるコツ</a>
   </aside>
 
   <!-- MAIN -->
@@ -547,6 +552,7 @@ a:hover { text-decoration: underline; }
         <span class="chip">SRT / CSV 出力</span>
         <span class="chip">ローカル処理（無料）</span>
         <span class="chip">OpenAI API モード</span>
+        <span class="chip">原稿なし文字起こし</span>
       </div>
     </div>
 
@@ -1332,8 +1338,148 @@ the same period last year.</div>
       </div>
     </div>
 
+    <!-- ============ 14. 文字起こし（原稿なし）============ -->
+    <div class="section" id="s14">
+      <div class="section-header">
+        <div class="section-num">14</div>
+        <h2>文字起こし（原稿なし）機能</h2>
+      </div>
+      <div class="section-body">
+
+        <p>音声ファイルを用意するだけで、ハコ割りテキストなしで文字起こしができます。Whisper が自動でセグメント（意味のかたまり）に区切り、SRT・TXT・CSV を出力します。</p>
+
+        <div class="notice info">
+          <div class="notice-icon"></div>
+          <div class="notice-body">
+            <strong>「ハコ割り生成」との違い</strong>
+            「ハコ割り生成」は事前に原稿を用意してタイムスタンプを合わせるモードです。「文字起こし（原稿なし）」は原稿不要で、Whisper の認識結果をそのまま SRT にします。まず全文を書き起こして原稿を作りたいときに便利です。
+          </div>
+        </div>
+
+        <h3 id="s14-when">よく使う場面</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>場面</th><th>具体例</th></tr></thead>
+            <tbody>
+              <tr><td>社内会議・セミナーの議事録</td><td>録音した会議音声をそのまま文字起こしして議事録の下書きを作る</td></tr>
+              <tr><td>インタビュー素材の整理</td><td>収録済みインタビュー音声から全発言を書き起こす</td></tr>
+              <tr><td>ハコ割り原稿の下書き作成</td><td>書き起こした TXT をもとに字幕のハコ割りを手直しする</td></tr>
+              <tr><td>YouTube / SNS 動画の自動キャプション</td><td>ショート動画の字幕を原稿なしで素早く作る</td></tr>
+              <tr><td>外国語コンテンツの書き起こし</td><td>英語・中国語などの動画を書き起こして翻訳の素材にする</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 id="s14-how">使い方（ステップバイステップ）</h3>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-card-num">1</div>
+            <div class="step-card-body">
+              <strong>「📝 文字起こし（原稿なし）」タブをクリック</strong>
+              <span class="sub">画面上部のタブ切り替えで文字起こしモードに移動します。</span>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">2</div>
+            <div class="step-card-body">
+              <strong>音声・映像ファイルをアップロード</strong>
+              <span class="sub">MP3 / WAV / MP4 など対応形式のファイルをドロップ、またはクリックして選択します。ハコ割りテキストは不要です。</span>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">3</div>
+            <div class="step-card-body">
+              <strong>「▶ 文字起こしを実行」ボタンを押す</strong>
+              <span class="sub">ボタンは音声をアップロードすると押せるようになります。サイドバーの言語・モデル設定はこのモードにも適用されます。</span>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-card-num">4</div>
+            <div class="step-card-body">
+              <strong>進捗バーが「完了！」になったらダウンロード</strong>
+              <span class="sub">transcribe.srt / transcribe.txt / transcribe.csv の 3 ファイルをダウンロードできます。</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <span class="example-num">例 1</span>
+            セミナー録音を議事録の下書きに
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">状況</span><span class="ex-val">60 分のセミナー録音（MP3）の内容を文字に起こして議事録の下書きを作りたい</span></div>
+            <div class="ex-row"><span class="ex-label">手順</span><span class="ex-val">①「文字起こし（原稿なし）」タブを開く ②音声をアップロード ③言語を「Japanese / 日本語」に設定 ④「文字起こしを実行」をクリック</span></div>
+            <div class="ex-row"><span class="ex-label">結果</span><span class="ex-val">transcribe.txt に発言が時系列でまとまる。これをベースに議事録を編集できる</span></div>
+            <div class="ex-row"><span class="ex-label">所要時間</span><span class="ex-val">turbo モデル / ローカル処理で約 15〜25 分</span></div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <span class="example-num">例 2</span>
+            ハコ割り生成の前に全文確認
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">状況</span><span class="ex-val">原稿がまだないが、とりあえず動画の全発言を確認したい</span></div>
+            <div class="ex-row"><span class="ex-label">手順</span><span class="ex-val">①「文字起こし（原稿なし）」で書き起こす ② transcribe.txt をテキストエディタで開く ③ 字幕に分割してハコ割りテキストを作る ④「ハコ割り生成」タブで SRT を生成する</span></div>
+            <div class="ex-row"><span class="ex-label">ポイント</span><span class="ex-val">文字起こし → ハコ割り編集 → SRT 生成 の 3 ステップがすべてこのツール内で完結する</span></div>
+          </div>
+        </div>
+
+        <div class="example">
+          <div class="example-header">
+            <span class="example-num">例 3</span>
+            外国語動画の書き起こし
+          </div>
+          <div class="example-body">
+            <div class="ex-row"><span class="ex-label">状況</span><span class="ex-val">英語の YouTube 動画（MP4）を文字起こしして翻訳素材にしたい</span></div>
+            <div class="ex-row"><span class="ex-label">設定</span><span class="ex-val">サイドバーの「認識言語」を「English / 英語 [en]」に変更する</span></div>
+            <div class="ex-row"><span class="ex-label">結果</span><span class="ex-val">英語テキストが時系列で出力される。翻訳ツールに貼り付けるか、transcribe.csv で行ごとに翻訳すると効率的</span></div>
+          </div>
+        </div>
+
+        <h3 id="s14-output">出力ファイルについて</h3>
+        <div class="output-cards">
+          <div class="output-card">
+            <div class="output-card-head">📝 transcribe.srt</div>
+            <div class="output-card-body">SRT 字幕ファイル<ul><li>Premiere Pro / DaVinci Resolve に読み込める</li><li>YouTube への字幕アップロードに使える</li></ul></div>
+          </div>
+          <div class="output-card">
+            <div class="output-card-head">📄 transcribe.txt</div>
+            <div class="output-card-body">タイムスタンプ付きテキスト<ul><li>内容確認・議事録の下書きに</li><li>SRT と同じフォーマット</li></ul></div>
+          </div>
+          <div class="output-card">
+            <div class="output-card-head">📊 transcribe.csv</div>
+            <div class="output-card-body">表形式データ<ul><li>Excel で開ける</li><li>No / Start / End / Duration / Text</li><li>行ごとに編集・翻訳しやすい</li></ul></div>
+          </div>
+        </div>
+        <div class="notice info">
+          <div class="notice-icon"></div>
+          <div class="notice-body">「ハコ割り生成」モードの出力（output.srt / output.txt / output.csv）とファイル名が異なるため、同じフォルダに保存しても上書きされません。</div>
+        </div>
+
+        <h3 id="s14-tips">精度を上げるコツ</h3>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>課題</th><th>対処法</th></tr></thead>
+            <tbody>
+              <tr><td>音声が聞き取りにくい</td><td>事前に動画編集ソフトでBGM・ノイズを下げてから書き起こす</td></tr>
+              <tr><td>認識精度が低い</td><td>サイドバーのモデルを <strong>turbo → large-v3</strong> に変更する（処理は遅くなる）</td></tr>
+              <tr><td>短い発言が抜ける</td><td>「最小表示時間」を小さく（例: 0.3 秒）設定する</td></tr>
+              <tr><td>字幕が長くなりすぎる</td><td>書き起こし後に transcribe.txt を編集してハコ割り生成モードで再生成する</td></tr>
+              <tr><td>長い動画で API 上限エラー</td><td>動画を 20 分以内に分割して書き起こす。またはローカルモードに切り替える</td></tr>
+              <tr><td>日本語と英語が混在する</td><td>「認識言語」を「自動検出」にする</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
     <div class="footer">
-      ハコ割り生成ツール v1.0.0　|　<a href="http://127.0.0.1:8503">http://127.0.0.1:8503</a>　|　最終更新: 2026-06-09
+      ハコ割り生成ツール v1.1.0　|　<a href="http://127.0.0.1:8503">http://127.0.0.1:8503</a>　|　最終更新: 2026-06-10
     </div>
 
   </main>
